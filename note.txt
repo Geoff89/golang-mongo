@@ -1,0 +1,93 @@
+changed port of mongo express to 8082 from 8081. Was use by another port number
+
+
+# docker-compose.ym;
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=pass      
+    volumes:
+      - ./mongo:/data/db
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongogui
+    restart: always
+    ports:
+      - 8082:8082
+    environment:
+      - ME_CONFIG_BASICAUTH_USERNAME=root
+      - ME_CONFIG_BASICAUTH_PASSWORD=root
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
+      - ME_CONFIG_MONGODB_PORT=27017
+
+
+-- npm i -g mongo-express@1.0.0      
+
+docker run -it --rm \
+    --network golang-mongodb_default \
+    --name mongo-express \
+    -p 8082:8082 \
+    -e ME_CONFIG_OPTIONS_EDITORTHEME="ambiance" \
+    -e ME_CONFIG_MONGODB_SERVER="mongo" \
+    -e ME_CONFIG_BASICAUTH_USERNAME="user" \
+    -e ME_CONFIG_BASICAUTH_PASSWORD="password" \
+    -e ME_CONFIG_MONGODB_ADMINUSERNAME=admin \
+    -e ME_CONFIG_MONGODB_ADMINPASSWORD=pass \
+    mongo-express
+
+docker run -it --rm \
+    --network golang-mongodb_default \
+    --name mongo-express \
+    -p 8081:8081 \
+    -e ME_CONFIG_OPTIONS_EDITORTHEME="ambiance" \
+    -e ME_CONFIG_MONGODB_SERVER="mongo" \
+    -e ME_CONFIG_MONGODB_ADMINUSERNAME=admin \
+    -e ME_CONFIG_MONGODB_ADMINPASSWORD=pass \
+    mongo-express    
+
+- mongo-express -a -u admin -p pass   
+
+- mongo -u admin -p --authenticationDatabase admin
+
+use admin
+db.createUser(
+  {
+    user: "root",
+    pwd: "pass123",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
+  }
+)  
+
+version: "3.7"
+
+services:
+  db:
+    container_name: mongo
+    image: mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+    ports:
+      - '27017:27017'
+    volumes: 
+      - ./data:/data/db
+  
+docker run -d 
+    -p 27017:27017 
+    --name test-mongo 
+    -v mongo-data:/data/db 
+    -e MONGODB_INITDB_ROOT_USERNAME=sample-db-user
+    -e MONGODB_INITDB_ROOT_PASSWORD=sample-password 
+    mongo:latest  
